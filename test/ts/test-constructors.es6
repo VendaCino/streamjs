@@ -1,10 +1,13 @@
+// I'm using Babel.js and Intellij IDEA File Watcher to automatically transpile es6 to js:
+// --source-maps --out-file $FileNameWithoutExtension$-compiled.js $FilePath$
+
 
 import {suite, test} from '@testdeck/mocha';
 import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class Constructorses6 {
 @test 'input ES6 iterator'() {
 
     function* iterator() {

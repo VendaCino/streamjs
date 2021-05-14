@@ -8,7 +8,11 @@ function transAll() {
 
         if (path.startsWith("test-")) {
             let data = fs.readFileSync(`${folderPath}/${path}`, "utf-8");
-            let dataAfterTrans=trans(data);
+            let name = path.substring(5,6).toUpperCase()+path.substring(6)
+                .replace("-","").replace(".js","")
+                .replace(".","")
+            ;
+            let dataAfterTrans=trans(data,name);
             fs.writeFileSync(`${outPath}/${path.replace('.js', '.ts')}`, dataAfterTrans);
         }
 
@@ -52,11 +56,13 @@ import {Stream} from "../../src/TsStream";
 
 @suite\nclass ${name??"Test"} {\n`;
     let match:RegExpExecArray | null;
+    let preStart = -1;
     let restStart = 0;
     while((match = regex.exec(code))) {
         const [,key, value] = match;
         result += `@test '${key}'() {\n${value}\n}\n`;
         restStart = match.index+match.length;
+        if(preStart === -1) preStart = match.index;
     }
     if(restStart<code.length){
         if((match = regex2.exec(code.substring(restStart)))) {
@@ -65,6 +71,9 @@ import {Stream} from "../../src/TsStream";
         }
     }
     result+="\n}\n";
+    if(preStart!==-1){
+        result=code.substring(0,preStart)+result;
+    }
     return result;
 }
 

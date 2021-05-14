@@ -4,7 +4,7 @@ import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class Optional {
 @test 'Optional get 1'() {
 
     var result = Stream.Optional.of(1).get();

@@ -1,10 +1,15 @@
+// I'm using Babel.js and Intellij IDEA File Watcher to automatically transpile es6 to js:
+// --source-maps --out-file $FileNameWithoutExtension$-compiled.js $FilePath$
+
+"use strict";
+
 
 import {suite, test} from '@testdeck/mocha';
 import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class Constructorscompiled {
 @test 'input ES6 iterator'() {
 
     var marked1$0 = [iterator].map(regeneratorRuntime.mark);

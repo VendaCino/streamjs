@@ -1,3 +1,30 @@
+
+var createParents = function (numParents, numChildren) {
+    return Stream
+        .range(0, numParents)
+        .map(function (num) {
+            return {
+                parentId: num,
+                type: 'parent',
+                children: []
+            };
+        })
+        .peek(function (parent) {
+            parent.children = Stream
+                .range(0, numChildren)
+                .map(function (num) {
+                    return {
+                        childId: num,
+                        type: 'child',
+                        parent: parent
+                    };
+                })
+                .toArray();
+        })
+        .toArray();
+};
+
+
 QUnit.test("filter - flatMap - map - distinct - filter - join", function (assert) {
     var people = [];
 
@@ -43,31 +70,6 @@ QUnit.test("filter - map - toArray", function (assert) {
     assert.equal(data[2], 3);
     assert.equal(data[3], 4);
 });
-
-var createParents = function (numParents, numChildren) {
-    return Stream
-        .range(0, numParents)
-        .map(function (num) {
-            return {
-                parentId: num,
-                type: 'parent',
-                children: []
-            };
-        })
-        .peek(function (parent) {
-            parent.children = Stream
-                .range(0, numChildren)
-                .map(function (num) {
-                    return {
-                        childId: num,
-                        type: 'child',
-                        parent: parent
-                    };
-                })
-                .toArray();
-        })
-        .toArray();
-};
 
 QUnit.test("parent / children 1", function (assert) {
     var parents = createParents(5, 3);

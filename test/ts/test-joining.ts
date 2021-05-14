@@ -4,7 +4,7 @@ import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class Joining {
 @test 'joining'() {
 
     var result = Stream([1, 2, 3, 4]).joining();

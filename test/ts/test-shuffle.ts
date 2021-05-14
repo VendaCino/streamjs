@@ -4,7 +4,7 @@ import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class Shuffle {
 @test 'shuffle num array'() {
 
     var data = [1, 2, 3, 4, 5];

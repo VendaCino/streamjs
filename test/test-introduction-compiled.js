@@ -3,6 +3,8 @@
 
 "use strict";
 
+var persons = [{ name: "Max", age: 18 }, { name: "Peter", age: 23 }, { name: "Pamela", age: 23 }, { name: "David", age: 12 }];
+
 QUnit.test("sample 1", function (assert) {
     var myList = ["a1", "a2", "b1", "c2", "c1"];
 
@@ -147,8 +149,6 @@ QUnit.test("sample 9", function (assert) {
     }), true);
     assert.equal(odd([1, 2, 3]).toArray().length, 2);
 });
-
-var persons = [{ name: "Max", age: 18 }, { name: "Peter", age: 23 }, { name: "Pamela", age: 23 }, { name: "David", age: 12 }];
 
 QUnit.test("sample 10", function (assert) {
     var groups = Stream(persons).groupBy(function (p) {

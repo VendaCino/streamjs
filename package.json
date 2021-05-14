@@ -18,7 +18,7 @@
     "array"
   ],
   "scripts": {
-    "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.ts'"
+    "test": "nyc ./node_modules/.bin/_mocha 'test/ts/**/*.ts' --require ./register.js"
   },
   "repository": {
     "type": "git",

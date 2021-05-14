@@ -4,7 +4,7 @@ import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class Distinct {
 @test 'distinct'() {
 
     var result = Stream([1, 3, 3, 1])

@@ -4,7 +4,7 @@ import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
 @suite
-class Test {
+class FlatMap {
 @test 'flatMap num array'() {
 
     var data = [1, 2, 3];

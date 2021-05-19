@@ -127,11 +127,11 @@ export class Pipeline implements IPipeline {
     groupBy(arg) {
         return this._checkAndSetConsumed(()=>this.terminal.groupBy(arg));
     }
-    toMap() {
-        return this._checkAndSetConsumed(()=>this.terminal.toMap());
+    toMap(arg0,arg1: boolean | Function = false) {
+        return this._checkAndSetConsumed(()=>this.terminal.toMap(arg0, arg1));
     }
-    partitionBy() {
-        return this._checkAndSetConsumed(()=>this.terminal.partitionBy());
+    partitionBy(arg0) {
+        return this._checkAndSetConsumed(()=>this.terminal.partitionBy(arg0));
 
     }
     joining(arg: any) {
@@ -305,4 +305,17 @@ export class Pipeline implements IPipeline {
     };
 
 
+    indexBy(arg0,arg1: boolean | Function = false){
+        return this.toMap(arg0, arg1)
+    }
+
+    partitioningBy(arg0){return this.partitionBy(arg0);}
+    groupingBy(arg){return this.groupBy(arg);}
+    each(fn: any){return this.forEach(fn);}
+    toList(){return this.toArray();}
+    join(arg: any){return this.joining(arg);}
+    avg(path: any){return this.average(path);}
+    sort(arg){return this.sorted(arg);}
+    size(){return this.count();}
+    findAny(){return this.findFirst();}
 }

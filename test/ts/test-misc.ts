@@ -3,7 +3,7 @@ import {suite, test} from '@testdeck/mocha';
 import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
-@suite
+// @suite
 class Misc {
 @test 'toArray twice'() {
 
@@ -29,8 +29,8 @@ class Misc {
     assert.strictEqual(stream.findAny, stream.findFirst);
 
 }
-@test 'toString'() {
 
+@test 'toString'() {
     var stream = Stream([]);
     assert.equal(stream.toString(), "[object Stream]");
 

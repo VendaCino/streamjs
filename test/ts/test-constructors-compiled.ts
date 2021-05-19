@@ -10,7 +10,7 @@ import {Stream} from "../../src/TsStream";
 
 @suite
 class Constructorscompiled {
-@test 'input ES6 iterator'() {
+/*@test*/ 'input ES6 iterator'() {
 
     var marked1$0 = [iterator].map(regeneratorRuntime.mark);
 

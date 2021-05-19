@@ -256,7 +256,8 @@ class Introductioncompiled {
     assert.equal(result.sumOfAges, 76);
 
 }
-@test 'sample 14'() {
+// @test
+'sample 14'() {
 
     var marked1$0 = [fibonacci].map(regeneratorRuntime.mark);
 

@@ -6,6 +6,13 @@ import {suite, test} from '@testdeck/mocha';
 import chai,{ assert } from 'chai';
 import {Stream} from "../../src/TsStream";
 
+var persons = [
+    {name: "Max", age: 18},
+    {name: "Peter", age: 23},
+    {name: "Pamela", age: 23},
+    {name: "David", age: 12}
+];
+
 @suite
 class Introductiones6 {
 @test 'sample 1'() {
@@ -156,16 +163,11 @@ class Introductiones6 {
 
     assert.equal(odd([1, 2, 3]).anyMatch(n => true), true);
     assert.equal(odd([1, 2, 3]).toArray().length, 2);
-});
+}
 
-var persons = [
-    {name: "Max", age: 18},
-    {name: "Peter", age: 23},
-    {name: "Pamela", age: 23},
-    {name: "David", age: 12}
-];
 
-QUnit.test("sample 10", function (assert) {
+
+@test "sample 10-1" () {
     var groups = Stream(persons)
         .groupBy(p => p.age);
 

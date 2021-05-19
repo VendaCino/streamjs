@@ -80,9 +80,9 @@ export interface ITerminal {
 
     groupBy(arg): any;
 
-    toMap(): any;
+    toMap(arg0,arg1: boolean | Function = false): any;
 
-    partitionBy(): any;
+    partitionBy(arg0): any;
 
     joining(arg): any;
 
@@ -330,15 +330,10 @@ export class Terminal implements ITerminal {
     }
     ;
 
-    toMap() {
+    toMap(arg0,arg1: boolean | Function = false) {
         let pipeline = this.pipeline;
-        var arg0 = arguments[0];
         if (isString(arg0)) {
             arg0 = pathMapper(arg0);
-        }
-        var arg1: boolean | Function = false;
-        if (arguments.length > 1) {
-            arg1 = arguments[1];
         }
         return pipeline.collect({
             supplier: function () {
@@ -363,7 +358,7 @@ export class Terminal implements ITerminal {
     }
     ;
 
-    partitionBy() {
+    partitionBy(arg0) {
         let pipeline = this.pipeline;
 
 
@@ -408,7 +403,6 @@ export class Terminal implements ITerminal {
             });
         };
 
-        var arg0 = arguments[0];
         if (isFunction(arg0)) {
             return partitionByPredicate(arg0);
         }

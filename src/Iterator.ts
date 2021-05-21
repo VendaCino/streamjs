@@ -5,7 +5,7 @@ import {TsStream} from "./TsStream";
 export abstract class Iterator<T> implements TsStream.Iterator<T> {
     abstract next() : T;
     done: boolean = false;
-    static of(data) {
+    static of(data:any) {
         if (data === null || data === undefined) {
             return new EmptyIterator(data);
         }

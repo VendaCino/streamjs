@@ -32,7 +32,7 @@ export default interface ITerminal<T> {
     allMatch(regexp: RegExp): boolean;
     allMatch(sample: TsStream.Sample): boolean;
     average(path?: string): Optional<number>;
-    collect(collector: TsStream.Collector<T>): T;
+    collect(collector: TsStream.Collector<T>): T ;
     count(): number;
     findFirst(): Optional<T>;
     forEach(consumer: TsStream.Consumer<T>): void;

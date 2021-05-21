@@ -68,13 +68,13 @@ export declare namespace TsStream {
     }
 
     export interface Accumulator<T> {
-        (e1: T, e2: T): T;
+        (e1: T, e2: T, first?: T): T;
     }
 
     export interface Collector<T> {
         supplier: Supplier<T>;
-        accumulator: TsStream.Accumulator<T>;
-        finisher: Function<T, T>;
+        accumulator?: TsStream.Accumulator<T>;
+        finisher?: Function<T, T>;
     }
 
     export interface Comparator<T> {

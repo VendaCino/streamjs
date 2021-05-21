@@ -26,12 +26,11 @@ import { Optional } from "./Optional";
 import {ctx} from "./global";
 import {StreamInput, TsStream} from "./TsStream";
 import IPipeline from "./IPipline";
-import ITerminal from "./ITerminal";
 
 
 export class Pipeline<T> implements IPipeline<T>{
     private lastOp: PipelineOp;
-    private terminal: ITerminal<T>;
+    private terminal: Terminal<T>;
     private consumed:boolean = false;
 
     constructor(input:StreamInput<T>) {
@@ -57,44 +56,44 @@ export class Pipeline<T> implements IPipeline<T>{
             this.consumed = true;
         }
     }
-    toArray(): any[] {
+    toArray(): T[] {
         return this._checkAndSetConsumed(()=>this.terminal.toArray());
     }
     findFirst(): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.findFirst());
     }
-    forEach(fn: any): void {
-        return this._checkAndSetConsumed(()=>this.terminal.forEach(fn));
+    forEach(consumer: TsStream.Consumer<T>): void {
+        return this._checkAndSetConsumed(()=>this.terminal.forEach(consumer));
     }
-    min(arg: any): Optional<T> {
+    min(arg?:TsStream.Comparator<T>|string): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.min(arg));
     }
-    max(arg: any): Optional<T> {
+    max(arg?:TsStream.Comparator<T>|string): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.max(arg));
     }
-    sum(path: any): number {
+    sum(path?: string): number {
         return this._checkAndSetConsumed(()=>this.terminal.sum(path));
     }
-    average(path: any): Optional<T> {
+    average(path?: string): Optional<number> {
         return this._checkAndSetConsumed(()=>this.terminal.average(path));
     }
     count(): number {
         return this._checkAndSetConsumed(()=>this.terminal.count());
     }
-    allMatch(arg:any): boolean {
+    allMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample):boolean {
         return this._checkAndSetConsumed( ()=>this.terminal.allMatch(arg));
     }
-    anyMatch(arg): boolean {
+    anyMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample):boolean {
         return this._checkAndSetConsumed(()=>this.terminal.anyMatch(arg));
     }
-    noneMatch(arg): boolean {
+    noneMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample):boolean {
         return this._checkAndSetConsumed(()=>this.terminal.noneMatch(arg));
     }
-    collect(collector: any) {
+    collect(collector: TsStream.Collector<T>): T {
         return this._checkAndSetConsumed(()=>this.terminal.collect(collector));
     }
-    reduce(arg0,arg1) {
-        return this._checkAndSetConsumed(()=>this.terminal.reduce(arg0,arg1));
+    reduce(identity: T|TsStream.Accumulator<T>, accumulator?: TsStream.Accumulator<T>): Optional<T> {
+        return this._checkAndSetConsumed(()=>this.terminal.reduce(identity,accumulator));
     }
     groupBy(arg) {
         return this._checkAndSetConsumed(()=>this.terminal.groupBy(arg));

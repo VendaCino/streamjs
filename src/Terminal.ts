@@ -161,7 +161,7 @@ export class Terminal<T> implements ITerminal<T> {
         return result;
     };
 
-    allMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample) {
+    allMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample):boolean {
         let pipeline = this.pipeline;
         let current, fn:Function ;
         if (isRegExp(arg)) {
@@ -184,7 +184,7 @@ export class Terminal<T> implements ITerminal<T> {
         return true;
     };
 
-    anyMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample) {
+    anyMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample):boolean {
         let current,  fn;
         if (isRegExp(arg)) {
             fn = function (obj :string) {
@@ -207,7 +207,7 @@ export class Terminal<T> implements ITerminal<T> {
         return false;
     };
 
-    noneMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample) {
+    noneMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample):boolean {
         let current,  fn;
         if (isRegExp(arg)) {
             fn = function (obj :string) {
@@ -251,7 +251,7 @@ export class Terminal<T> implements ITerminal<T> {
         if (accumulator) {
             return Optional.ofNullable(pipeline.collect({
                 supplier: function () {
-                    return identity;
+                    return identity as T;
                 },
                 accumulator: accumulator
             }));
@@ -282,10 +282,10 @@ export class Terminal<T> implements ITerminal<T> {
         if (isString(path)) {
             fn = pathMapper(path as string);
         }else fn = path as TsStream.Function<T, string> ;
-        let pipeline = this.pipeline;
-        return pipeline.collect({
+        let pipeline = this.pipeline as unknown as Pipeline<TsStream.GroupingResult<T>>;
+        let r = pipeline.collect({
             supplier: function () {
-                return {};
+                return {} ;
             },
             accumulator: function (map : any, obj : any) {
                 var key = fn.call(ctx, obj);
@@ -301,11 +301,12 @@ export class Terminal<T> implements ITerminal<T> {
                 return map;
             }
         });
+        return r;
     }
     ;
 
     toMap(pathOrKeyMapper: TsStream.Function<T, string>|string, mergeFunction: TsStream.Accumulator<T>|boolean = false): TsStream.Map<T> {
-        let pipeline = this.pipeline;
+        let pipeline = this.pipeline as unknown as Pipeline<TsStream.Map<T>>;
         let keyMapper : TsStream.Function<T, string>;
         if (isString(pathOrKeyMapper)) {
             keyMapper = pathMapper(pathOrKeyMapper as string);
@@ -334,7 +335,7 @@ export class Terminal<T> implements ITerminal<T> {
     ;
 
     partitionBy(arg0:TsStream.Predicate<T>|number|RegExp|TsStream.Sample): T[][] {
-        let pipeline = this.pipeline;
+        let pipeline = this.pipeline as unknown as Pipeline<T[][]>;
 
 
         var partitionByPredicate = function (predicate:Function) {
@@ -342,7 +343,7 @@ export class Terminal<T> implements ITerminal<T> {
                 supplier: function () {
                     return {
                         "true": [], "false": []
-                    };
+                    } as unknown as T[][];
                 },
                 accumulator: function (map : any, obj : any) {
                     let result = predicate.call(ctx, obj);
@@ -397,7 +398,7 @@ export class Terminal<T> implements ITerminal<T> {
         throw 'partitionBy requires argument of type function, object, regexp or number';
     }
 
-    joining(arg?:TsStream.JoinOptions|string) {
+    joining(arg?:TsStream.JoinOptions|string): string {
         var prefix = "", suffix = "", delimiter = "";
         if (arg) {
             if (isString(arg)) {
@@ -409,12 +410,12 @@ export class Terminal<T> implements ITerminal<T> {
                 delimiter = opt.delimiter || delimiter;
             }
         }
-        let pipeline = this.pipeline;
+        let pipeline = this.pipeline as unknown as Pipeline<string>;;
         return pipeline.collect({
             supplier: function () {
                 return "";
             },
-            accumulator: function (str:string, obj:any, first:any) {
+            accumulator: function (str:string, obj:string, first?:string) {
                 let delim = first ? '' : delimiter;
                 return str + delim + String(obj);
             },

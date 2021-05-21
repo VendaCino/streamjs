@@ -1,67 +1,71 @@
-var ctx = {};
-export class Optional {
+import {TsStream} from "./TsStream";
 
-    private val:any|undefined|null;
+var ctx = {};
+
+export class Optional<T> {
+
+    private val: any | undefined | null;
 
 
     constructor(val: any) {
         this.val = val;
     }
 
-    static of(val){
+    static of<T>(val: T): Optional<T> {
         if (val === null || val === undefined) {
             throw "value must be present";
         }
         return new Optional(val);
     };
 
-    static ofNullable(val){
+    static ofNullable<T>(val: T): Optional<T> {
         return new Optional(val);
     };
 
-    static empty(){
-        return new Optional(undefined);
+    static empty<T>(): Optional<T> {
+        return new Optional<T>(undefined);
     };
 
-    isPresent(){
+    isPresent(): boolean {
         return this.val !== null && this.val !== undefined;
     };
 
-    get(){
+    get(): T {
         if (!this.isPresent()) {
             throw "optional this.value is not present";
         }
         return this.val;
     };
 
-    ifPresent(consumer){
+    ifPresent(consumer: (elem: T) => void): void {
         if (this.isPresent()) {
             consumer.call(this.val, this.val);
         }
     };
 
-    orElse(otherVal){
+    orElse(other: T): T {
         if (this.isPresent()) {
             return this.val;
         }
-        return otherVal;
+        return other;
     };
 
-    orElseGet(supplier){
+    orElseGet(supplier: TsStream.Supplier<T>): T {
+
         if (this.isPresent()) {
             return this.val;
         }
         return supplier.call(ctx);
     };
 
-    orElseThrow(errorMsg){
+    orElseThrow(error: any): T {
         if (this.isPresent()) {
             return this.val;
         }
-        throw errorMsg;
+        throw error;
     };
 
-    filter(predicate){
+    filter(predicate: (elem: T) => boolean): Optional<T> {
         if (this.isPresent()) {
             var filtered = predicate.call(ctx, this.val);
             if (filtered) {
@@ -72,18 +76,20 @@ export class Optional {
         return this;
     };
 
-    map(mapper){
+    map<U>(mapper: (elem: T) => U): Optional<U> {
         if (this.isPresent()) {
             var mappedVal = mapper.call(ctx, this.val);
             return Optional.ofNullable(mappedVal);
         }
+        // @ts-ignore
         return this;
     };
 
-    flatMap(flatMapper){
+    flatMap<U>(mapper: (elem: T) => Optional<U>): Optional<U> {
         if (this.isPresent()) {
-            return flatMapper.call(ctx, this.val);
+            return mapper.call(ctx, this.val);
         }
+        // @ts-ignore
         return this;
     };
 
@@ -91,6 +97,5 @@ export class Optional {
         return "[object Optional]";
     };
 }
-
 
 

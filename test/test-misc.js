@@ -31,7 +31,7 @@ QUnit.test("version", function (assert) {
 
 QUnit.test("noConflict", function (assert) {
     var MyStream = Stream.noConflict();
-    assert.equal(window.Stream, undefined);
+    assert.equal(window.TsStream, undefined);
     assert.ok(MyStream !== undefined);
     window.Stream = MyStream;
 });

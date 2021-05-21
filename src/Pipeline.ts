@@ -24,53 +24,24 @@ import {
 import {ITerminal, Terminal} from "./Terminal";
 import { Optional } from "./Optional";
 import {ctx} from "./global";
+import {StreamInput, TsStream} from "./TsStream";
+import IPipeline from "./IPipline";
 
-export interface IPipeline extends ITerminal {
-    add(op): void;
 
-    next(): any;
-
-    filter(arg);
-
-    map(arg);
-
-    flatMap(arg);
-
-    sorted(arg);
-
-    shuffle();
-
-    reverse();
-
-    distinct();
-
-    slice(begin, end);
-
-    skip(num);
-
-    limit(num);
-
-    peek(consumer);
-
-    takeWhile();
-
-    dropWhile();
-}
-
-export class Pipeline implements IPipeline {
+export class Pipeline<T> implements IPipeline<T>{
     private lastOp: PipelineOp;
     private terminal: Terminal;
     private consumed:boolean = false;
 
-    constructor(input) {
+    constructor(input:StreamInput<T>) {
         // default op iterates over input elements
 
         if (isFunction(input)) {
             this.lastOp = new GeneratorOp(function () {
-                return input.call(ctx);
+                return (input as TsStream.Supplier<T>).call(ctx);
             });
         } else if (isString(input)) {
-            this.lastOp = new IteratorOp(input.split(''));
+            this.lastOp = new IteratorOp((input as String).split(''));
         } else {
             this.lastOp = new IteratorOp(input);
         }
@@ -88,22 +59,22 @@ export class Pipeline implements IPipeline {
     toArray(): any[] {
         return this._checkAndSetConsumed(()=>this.terminal.toArray());
     }
-    findFirst(): Optional {
+    findFirst(): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.findFirst());
     }
     forEach(fn: any): void {
         return this._checkAndSetConsumed(()=>this.terminal.forEach(fn));
     }
-    min(arg: any): Optional {
+    min(arg: any): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.min(arg));
     }
-    max(arg: any): Optional {
+    max(arg: any): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.max(arg));
     }
     sum(path: any): number {
         return this._checkAndSetConsumed(()=>this.terminal.sum(path));
     }
-    average(path: any): Optional {
+    average(path: any): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.average(path));
     }
     count(): number {

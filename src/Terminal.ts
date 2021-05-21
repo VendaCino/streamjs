@@ -14,17 +14,20 @@ import {
 import {Optional} from "./Optional";
 import {Iterator} from "./Iterator";
 import {ctx, nil} from "./global";
+import ITerminal from "./ITerminal";
+import {TsStream} from "./TsStream";
+import IPipeline from "./IPipline";
 
-class StreamIterator extends Iterator{
-    private pipeline: Pipeline
-    private value: Pipeline
+class StreamIterator extends Iterator<any>{
+    private pipeline: Pipeline<any>
+    private value: Pipeline<any>
 
-    constructor(pipeline: Pipeline) {
+    constructor(pipeline: Pipeline<any>) {
         super();
         this.pipeline = pipeline;
         this.value = pipeline.next();
     }
-    next  () {
+    next  (): any {
         let pipeline = this.pipeline;
         if (this.value === nil) {
             return {
@@ -51,49 +54,11 @@ class StreamIterator extends Iterator{
 }
 
 
-export interface ITerminal {
-    toArray(): any[];
+export class Terminal<T> implements ITerminal<T> {
 
-    findFirst(): Optional;
+    private pipeline: Pipeline<T>
 
-    forEach(fn): void;
-
-    min(arg): Optional;
-
-    max(arg): Optional;
-
-    sum(path): number;
-
-    average(path): Optional;
-
-    count(): number;
-
-    allMatch(arg:any): boolean;
-
-    anyMatch(arg): boolean;
-
-    noneMatch(arg): boolean;
-
-    collect(collector): any;
-
-    reduce(arg0,arg1): any;
-
-    groupBy(arg): any;
-
-    toMap(arg0,arg1: boolean | Function = false): any;
-
-    partitionBy(arg0): any;
-
-    joining(arg): any;
-
-    iterator():StreamIterator;
-}
-
-export class Terminal implements ITerminal {
-
-    private pipeline: Pipeline
-
-    constructor(pipeline: Pipeline) {
+    constructor(pipeline: Pipeline<T>) {
         this.pipeline = pipeline;
     }
 
@@ -105,7 +70,7 @@ export class Terminal implements ITerminal {
         return result;
     };
 
-    findFirst() {
+    findFirst(): Optional<T> {
         var obj = this.pipeline.next();
         if (obj === nil) {
             return Optional.empty();
@@ -113,24 +78,24 @@ export class Terminal implements ITerminal {
         return Optional.ofNullable(obj);
     };
 
-    forEach(fn) {
+    forEach(fn: TsStream.Consumer<T>): void{
         let pipeline = this.pipeline;
-        var current, consoleFn = isConsoleFn(fn);
+        let current, consoleFn = isConsoleFn(fn);
         while ((current = pipeline.next()) !== nil) {
             fn.call(consoleFn ? console : ctx, current);
         }
     };
 
-    min(arg) {
-        var comparator;
+    min(arg?:TsStream.Comparator<T>|string): Optional<T>{
+        let comparator : TsStream.Comparator<T>;
         if (isFunction(arg)) {
-            comparator = arg;
+            comparator = arg as TsStream.Comparator<T>;
         } else if (isString(arg)) {
-            comparator = pathComparator(arg);
+            comparator = pathComparator(arg as string);
         } else {
             comparator = defaultComparator;
         }
-        var current, result = null;
+        let current, result = null;
         let pipeline = this.pipeline;
         while ((current = pipeline.next()) !== nil) {
             if (result === null || comparator.call(ctx, current, result) < 0) {
@@ -140,12 +105,12 @@ export class Terminal implements ITerminal {
         return Optional.ofNullable(result);
     };
 
-    max(arg) {
-        var comparator;
+    max(arg?:TsStream.Comparator<T>|string): Optional<T> {
+        let comparator : TsStream.Comparator<T>;
         if (isFunction(arg)) {
-            comparator = arg;
+            comparator = arg as TsStream.Comparator<T>;
         } else if (isString(arg)) {
-            comparator = pathComparator(arg);
+            comparator = pathComparator(arg as string);
         } else {
             comparator = defaultComparator;
         }
@@ -159,9 +124,9 @@ export class Terminal implements ITerminal {
         return Optional.ofNullable(result);
     };
 
-    sum(path) {
+    sum(path?:string) {
         let pipeline = this.pipeline;
-        var fn = path ? pathMapper(path) : function (obj) {
+        let fn = path ? pathMapper(path) : function (obj : any) {
             return obj;
         };
         var current, result = 0;
@@ -171,9 +136,9 @@ export class Terminal implements ITerminal {
         return result;
     };
 
-    average(path) {
+    average(path?:string): Optional<number> {
         let pipeline = this.pipeline;
-        var fn = path ? pathMapper(path) : function (obj) {
+        var fn = path ? pathMapper(path) : function (obj : any) {
             return obj;
         };
         var current, count = 0, sum = 0;
@@ -189,27 +154,29 @@ export class Terminal implements ITerminal {
 
     count() {
         let pipeline = this.pipeline;
-        var result = 0;
+        let result = 0;
         while (pipeline.next() !== nil) {
             result++;
         }
         return result;
     };
 
-    allMatch(arg) {
+    allMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample) {
         let pipeline = this.pipeline;
-        var current, fn = arg;
+        let current, fn:Function ;
         if (isRegExp(arg)) {
-            fn = function (obj) {
-                return arg.test(obj);
+            fn = function (obj :string) {
+                return (arg as RegExp).test(obj);
             };
         } else if (isObject(arg)) {
-            fn = function (obj) {
+            fn = function (obj:any) {
                 return deepEquals(arg, obj);
             };
+        } else {
+            fn = arg as Function;
         }
         while ((current = pipeline.next()) !== nil) {
-            var match = fn.call(ctx, current);
+            let match = fn.call(ctx, current);
             if (!match) {
                 return false;
             }
@@ -217,16 +184,18 @@ export class Terminal implements ITerminal {
         return true;
     };
 
-    anyMatch(arg) {
-        var current,  fn = arg;
+    anyMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample) {
+        let current,  fn;
         if (isRegExp(arg)) {
-            fn = function (obj) {
-                return arg.test(obj);
+            fn = function (obj :string) {
+                return (arg as RegExp).test(obj);
             };
         } else if (isObject(arg)) {
-            fn = function (obj) {
+            fn = function (obj:any) {
                 return deepEquals(arg, obj);
             };
+        } else {
+            fn = arg as Function;
         }
         let pipeline = this.pipeline;
         while ((current = pipeline.next()) !== nil) {
@@ -238,16 +207,18 @@ export class Terminal implements ITerminal {
         return false;
     };
 
-    noneMatch(arg) {
-        var current, fn = arg;
+    noneMatch(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample) {
+        let current,  fn;
         if (isRegExp(arg)) {
-            fn = function (obj) {
-                return arg.test(obj);
+            fn = function (obj :string) {
+                return (arg as RegExp).test(obj);
             };
         } else if (isObject(arg)) {
-            fn = function (obj) {
+            fn = function (obj:any) {
                 return deepEquals(arg, obj);
             };
+        } else {
+            fn = arg as Function;
         }
         let pipeline = this.pipeline;
         while ((current = pipeline.next()) !== nil) {
@@ -259,11 +230,12 @@ export class Terminal implements ITerminal {
         return true;
     };
 
-    collect(collector) {
+    collect(collector: TsStream.Collector<T>): T{
         let pipeline = this.pipeline;
-        var identity = collector.supplier.call(ctx);
-        var current, first = true;
+        let identity = collector.supplier.call(ctx);
+        let current, first = true;
         while ((current = pipeline.next()) !== nil) {
+            // @ts-ignore
             identity = collector.accumulator.call(ctx, identity, current, first);
             first = false;
         }
@@ -273,19 +245,21 @@ export class Terminal implements ITerminal {
         return identity;
     };
 
-    reduce(arg0,arg1) {
+
+    // @ts-ignore
+    reduce(identity: T|TsStream.Accumulator<T>, accumulator?: TsStream.Accumulator<T>): T {
         let pipeline = this.pipeline;
 
-        if (arg1) {
+        if (accumulator) {
             return pipeline.collect({
                 supplier: function () {
-                    return arg0;
+                    return identity;
                 },
-                accumulator: arg1
+                accumulator: accumulator
             });
         }
 
-        var reduceFirst = function (accumulator) {
+        var reduceFirst = function (_accumulator: TsStream.Accumulator<T>) {
             var current;
 
             var identity = pipeline.next();
@@ -294,27 +268,29 @@ export class Terminal implements ITerminal {
             }
 
             while ((current = pipeline.next()) !== nil) {
-                identity = accumulator.call(ctx, identity, current);
+                identity = _accumulator.call(ctx, identity, current);
             }
 
             return Optional.ofNullable(identity);
         };
 
-        return reduceFirst(arg0);
+        // @ts-ignore
+        return reduceFirst(identity as TsStream.Accumulator<T>);
     };
 
 
-    groupBy(arg) {
-        if (isString(arg)) {
-            arg = pathMapper(arg);
-        }
+    groupBy(path: string|TsStream.Function<T, string>): TsStream.GroupingResult<T> {
+        let fn :TsStream.Function<T, string> ;
+        if (isString(path)) {
+            fn = pathMapper(path as string);
+        }else fn = path as TsStream.Function<T, string> ;
         let pipeline = this.pipeline;
         return pipeline.collect({
             supplier: function () {
                 return {};
             },
-            accumulator: function (map, obj) {
-                var key = arg.call(ctx, obj);
+            accumulator: function (map : any, obj : any) {
+                var key = fn.call(ctx, obj);
                 if (!map.hasOwnProperty(key)) {
                     map[key] = [];
                 }
@@ -330,23 +306,24 @@ export class Terminal implements ITerminal {
     }
     ;
 
-    toMap(arg0,arg1: boolean | Function = false) {
+    toMap(pathOrKeyMapper: TsStream.Function<T, string>|string, mergeFunction: TsStream.Accumulator<T>|boolean = false): TsStream.Map<T> {
         let pipeline = this.pipeline;
-        if (isString(arg0)) {
-            arg0 = pathMapper(arg0);
-        }
+        let keyMapper : TsStream.Function<T, string>;
+        if (isString(pathOrKeyMapper)) {
+            keyMapper = pathMapper(pathOrKeyMapper as string);
+        }else keyMapper = pathOrKeyMapper as TsStream.Function<T, string>;
         return pipeline.collect({
             supplier: function () {
                 return {};
             },
-            accumulator: function (map, obj) {
-                var key = arg0.call(ctx, obj);
+            accumulator: function (map : any, obj : any) {
+                var key = keyMapper.call(ctx, obj);
                 if (map.hasOwnProperty(key)) {
-                    if (!arg1) {
+                    if (!mergeFunction) {
                         throw "duplicate mapping found for key: " + key;
                     }
-                    if (typeof arg1 !== "boolean") {
-                        map[key] = arg1.call(ctx, map[key], obj);
+                    if (typeof mergeFunction !== "boolean") {
+                        map[key] = mergeFunction.call(ctx, map[key], obj);
                     }
                     return map;
                 }
@@ -358,34 +335,34 @@ export class Terminal implements ITerminal {
     }
     ;
 
-    partitionBy(arg0) {
+    partitionBy(arg0:TsStream.Predicate<T>|number|RegExp|TsStream.Sample): T[][] {
         let pipeline = this.pipeline;
 
 
-        var partitionByPredicate = function (predicate) {
+        var partitionByPredicate = function (predicate:Function) {
             return pipeline.collect({
                 supplier: function () {
                     return {
                         "true": [], "false": []
                     };
                 },
-                accumulator: function (map, obj) {
-                    var result = predicate.call(ctx, obj);
+                accumulator: function (map : any, obj : any) {
+                    let result = predicate.call(ctx, obj);
                     if (!map.hasOwnProperty(result)) {
-                        map[result] = [];
+                        map[result as any] = [];
                     }
-                    map[result].push(obj);
+                    map[result as any].push(obj);
                     return map;
                 }
             });
         };
 
-        var partitionByNumber = function (num) {
+        var partitionByNumber = function (num:number) {
             return pipeline.collect({
                 supplier: function () {
                     return [];
                 },
-                accumulator: function (array, obj) {
+                accumulator: function (array : Array<any>, obj : any) {
                     if (array.length === 0) {
                         array.push([obj]);
                         return array;
@@ -404,34 +381,34 @@ export class Terminal implements ITerminal {
         };
 
         if (isFunction(arg0)) {
-            return partitionByPredicate(arg0);
+            return partitionByPredicate(arg0 as Function);
         }
         if (isNumber(arg0)) {
-            return partitionByNumber(arg0);
+            return partitionByNumber(arg0 as number);
         }
         if (isRegExp(arg0)) {
-            return partitionByPredicate(function (obj) {
-                return arg0.test(obj);
+            return partitionByPredicate(function (obj:string) {
+                return (arg0 as RegExp).test(obj);
             });
         }
         if (isObject(arg0)) {
-            return partitionByPredicate(function (obj) {
+            return partitionByPredicate(function (obj:any) {
                 return deepEquals(arg0, obj);
             });
         }
         throw 'partitionBy requires argument of type function, object, regexp or number';
     }
-    ;
 
-    joining(arg) {
+    joining(arg?:TsStream.JoinOptions|string) {
         var prefix = "", suffix = "", delimiter = "";
         if (arg) {
             if (isString(arg)) {
-                delimiter = arg;
+                delimiter = arg as string;
             } else {
-                prefix = arg.prefix || prefix;
-                suffix = arg.suffix || suffix;
-                delimiter = arg.delimiter || delimiter;
+                let opt = arg as TsStream.JoinOptions;
+                prefix = opt.prefix || prefix;
+                suffix = opt.suffix || suffix;
+                delimiter = opt.delimiter || delimiter;
             }
         }
         let pipeline = this.pipeline;
@@ -439,18 +416,18 @@ export class Terminal implements ITerminal {
             supplier: function () {
                 return "";
             },
-            accumulator: function (str, obj, first) {
-                var delim = first ? '' : delimiter;
+            accumulator: function (str:string, obj:any, first:any) {
+                let delim = first ? '' : delimiter;
                 return str + delim + String(obj);
             },
-            finisher: function (str) {
+            finisher: function (str:string) {
                 return prefix + str + suffix;
             }
         });
     }
 
 
-    iterator () :StreamIterator {
+    iterator () :TsStream.Iterator<T>{
         return new StreamIterator(this.pipeline);
     };
 }

@@ -1,8 +1,10 @@
 import {isArrayLike, isIterator, isMap, isObject, isSet} from "./Utils";
 import {nil} from "./global";
+import {TsStream} from "./TsStream";
 
-export abstract class Iterator {
-    abstract next();
+export abstract class Iterator<T> implements TsStream.Iterator<T> {
+    abstract next() : T;
+    done: boolean = false;
     static of(data) {
         if (data === null || data === undefined) {
             return new EmptyIterator(data);

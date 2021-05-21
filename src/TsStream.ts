@@ -2,35 +2,37 @@ import {Pipeline} from "./Pipeline";
 import {ctx} from "./global";
 import {Optional} from "./Optional";
 
-export function Stream(input) {
+export type StreamInput<T> = T[]|TsStream.Supplier<T>|String;
+
+export function Stream<T> (input: StreamInput<T>): Pipeline<T> {
     return new Pipeline(input);
 }
 
-Stream.from = function (input) {
-    return Stream(input);
+Stream.from = function <T> (elems: T[]): Pipeline<T> {
+    return Stream(elems);
 };
 
-Stream.range = function (startInclusive, endExclusive) {
-    return Stream.iterate(startInclusive, function (num) {
+Stream.range = function (startInclusive: number, endExclusive: number): Pipeline<number> {
+    return Stream.iterate(startInclusive, function (num:number) {
         return num + 1;
     }).limit(endExclusive - startInclusive);
 };
 
-Stream.rangeClosed = function (startInclusive, endInclusive) {
+Stream.rangeClosed = function (startInclusive: number, endInclusive: number): Pipeline<number>{
     return Stream.range(startInclusive, endInclusive + 1);
 };
 
-Stream.of = function (...arg:any) {
-    var args = Array.prototype.slice.call(arg);
+Stream.of = function <T>(...elems: T[]): Pipeline<T> {
+    let args = Array.prototype.slice.call(elems);
     return Stream(args);
 };
 
-Stream.generate = function (supplier) {
+Stream.generate = function <T> (supplier: TsStream.Supplier<T>): Pipeline<T>{
     return Stream(supplier);
 };
 
-Stream.iterate = function (seed, fn) {
-    var first = true, current = seed;
+Stream.iterate = function <T>(seed: T, fn: TsStream.Function<T, T>): Pipeline<T>{
+    let first = true, current = seed;
     return Stream(function () {
         if (first) {
             first = false;
@@ -46,3 +48,68 @@ Stream.empty = function () {
 };
 
 Stream.Optional = Optional;
+
+export declare namespace TsStream {
+    export interface Supplier<T> {
+        (): T
+    }
+
+    export interface Function<T, U> {
+        (elem: T): U;
+    }
+
+    export interface Map<T> {
+        [index: string]: T
+    }
+
+
+    export interface Sample {
+        [index: string]: any
+    }
+
+    export interface Accumulator<T> {
+        (e1: T, e2: T): T;
+    }
+
+    export interface Collector<T> {
+        supplier: Supplier<T>;
+        accumulator: TsStream.Accumulator<T>;
+        finisher: Function<T, T>;
+    }
+
+    export interface Comparator<T> {
+        (e1: T, e2: T): number
+    }
+
+    export interface Consumer<T> {
+        (elem: T): void;
+    }
+
+    export interface Function<T, U> {
+        (elem: T): U;
+    }
+
+    export interface GroupingResult<T> {
+        [index: string]: T[]
+    }
+
+    export interface Iterator<T> {
+        next(): T;
+        done: boolean;
+    }
+
+    export interface JoinOptions {
+        prefix: string;
+        delimiter: string;
+        suffix: string;
+    }
+
+    export interface Predicate<T> {
+        (elem: T): boolean;
+    }
+
+    export interface Supplier<T> {
+        (): T
+    }
+
+}

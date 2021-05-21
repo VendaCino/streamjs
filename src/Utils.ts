@@ -1,12 +1,13 @@
+import {TsStream} from "./TsStream";
 
-export function defaultComparator(a, b) {
+export function defaultComparator(a : any, b : any) {
     if (a === b) {
         return 0;
     }
     return a > b ? 1 : -1;
 };
 
-export function pathComparator(path){
+export function pathComparator<T>(path:string) : TsStream.Comparator<T>{
     var fn = pathMapper(path);
     return function (obj1, obj2) {
         var a = fn(obj1),
@@ -15,15 +16,15 @@ export function pathComparator(path){
     };
 };
 
-export function pathMapper(path){
+export function pathMapper(path:string) : TsStream.Function<any,any>{
     if (path.indexOf('.') < 0) {
-        return function (obj) {
-            return obj[path];
+        return function (obj : any) {
+            return obj[path] ;
         };
     }
 
     var paths = path.split('.');
-    return function (obj) {
+    return function (obj : any) {
         var current = obj;
         for (var i = 0; i < paths.length; i++) {
             var path = paths[i];
@@ -32,7 +33,7 @@ export function pathMapper(path){
         return current;
     };
 };
- export function deepEquals(a, b):boolean{
+ export function deepEquals(a : any, b : any):boolean{
     if (!isObject(a)) {
         return a === b;
     }

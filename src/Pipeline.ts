@@ -277,8 +277,9 @@ export class Pipeline<T> implements IPipeline<T>{
     };
 
 
-    indexBy(arg0,arg1: boolean | Function = false){
-        return this.toMap(arg0, arg1)
+    indexBy(pathOrKeyMapper: TsStream.Function<T, string>|string,
+            mergeFunction: TsStream.Accumulator<T>|boolean = false): TsStream.Map<T>{
+        return this.toMap(pathOrKeyMapper, mergeFunction)
     }
 
     partitioningBy(arg0:TsStream.Predicate<T>|number|RegExp|TsStream.Sample): T[][]{

@@ -244,7 +244,7 @@ class Introductiones6 {
             res.names.push(p.name);
             res.sumOfAges += p.age;
             return res;
-        });
+        }).get();
 
     assert.equal(result.names.length, 4);
     assert.equal(result.names[0], "Pamela");

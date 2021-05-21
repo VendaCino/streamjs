@@ -10,7 +10,7 @@ class Reduce {
     var result = Stream([1, 2, 3, 4])
         .reduce(1000, function (identity, num) {
             return identity + num;
-        });
+        }).get();
     assert.equal(result, 1010);
 
 }
@@ -19,7 +19,7 @@ class Reduce {
     var result = Stream([])
         .reduce(1000, function (identity, num) {
             return identity + num;
-        });
+        }).get();
     assert.equal(result, 1000);
 
 }

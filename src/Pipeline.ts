@@ -21,16 +21,17 @@ import {
     pathComparator,
     pathMapper
 } from "./Utils";
-import {ITerminal, Terminal} from "./Terminal";
+import { Terminal} from "./Terminal";
 import { Optional } from "./Optional";
 import {ctx} from "./global";
 import {StreamInput, TsStream} from "./TsStream";
 import IPipeline from "./IPipline";
+import ITerminal from "./ITerminal";
 
 
 export class Pipeline<T> implements IPipeline<T>{
     private lastOp: PipelineOp;
-    private terminal: Terminal;
+    private terminal: ITerminal<T>;
     private consumed:boolean = false;
 
     constructor(input:StreamInput<T>) {

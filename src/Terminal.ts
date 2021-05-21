@@ -245,18 +245,16 @@ export class Terminal<T> implements ITerminal<T> {
         return identity;
     };
 
-
-    // @ts-ignore
-    reduce(identity: T|TsStream.Accumulator<T>, accumulator?: TsStream.Accumulator<T>): T {
+    reduce(identity: T|TsStream.Accumulator<T>, accumulator?: TsStream.Accumulator<T>): Optional<T> {
         let pipeline = this.pipeline;
 
         if (accumulator) {
-            return pipeline.collect({
+            return Optional.ofNullable(pipeline.collect({
                 supplier: function () {
                     return identity;
                 },
                 accumulator: accumulator
-            });
+            }));
         }
 
         var reduceFirst = function (_accumulator: TsStream.Accumulator<T>) {

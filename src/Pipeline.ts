@@ -95,17 +95,18 @@ export class Pipeline<T> implements IPipeline<T>{
     reduce(identity: T|TsStream.Accumulator<T>, accumulator?: TsStream.Accumulator<T>): Optional<T> {
         return this._checkAndSetConsumed(()=>this.terminal.reduce(identity,accumulator));
     }
-    groupBy(arg) {
+    groupBy(arg: string|TsStream.Function<T, string>): TsStream.GroupingResult<T> {
         return this._checkAndSetConsumed(()=>this.terminal.groupBy(arg));
     }
-    toMap(arg0,arg1: boolean | Function = false) {
-        return this._checkAndSetConsumed(()=>this.terminal.toMap(arg0, arg1));
+    toMap(pathOrKeyMapper: TsStream.Function<T, string>|string,
+          mergeFunction: TsStream.Accumulator<T>|boolean = false): TsStream.Map<T>  {
+        return this._checkAndSetConsumed(()=>this.terminal.toMap(pathOrKeyMapper, mergeFunction));
     }
-    partitionBy(arg0) {
+    partitionBy(arg0:TsStream.Predicate<T>|number|RegExp|TsStream.Sample): T[][] {
         return this._checkAndSetConsumed(()=>this.terminal.partitionBy(arg0));
 
     }
-    joining(arg: any) {
+    joining(arg?:TsStream.JoinOptions|string): string {
         return this._checkAndSetConsumed(()=>this.terminal.joining(arg));
     }
     iterator() {
@@ -280,13 +281,14 @@ export class Pipeline<T> implements IPipeline<T>{
         return this.toMap(arg0, arg1)
     }
 
-    partitioningBy(arg0){return this.partitionBy(arg0);}
-    groupingBy(arg){return this.groupBy(arg);}
-    each(fn: any){return this.forEach(fn);}
-    toList(){return this.toArray();}
-    join(arg: any){return this.joining(arg);}
-    avg(path: any){return this.average(path);}
+    partitioningBy(arg0:TsStream.Predicate<T>|number|RegExp|TsStream.Sample): T[][]{
+        return this.partitionBy(arg0);}
+    groupingBy(arg: string|TsStream.Function<T, string>): TsStream.GroupingResult<T>{return this.groupBy(arg);}
+    each(consumer: TsStream.Consumer<T>): void{return this.forEach(consumer);}
+    toList(): T[]{return this.toArray();}
+    join(arg?:TsStream.JoinOptions|string): string {return this.joining(arg);}
+    avg(path?: string): Optional<number> {return this.average(path);}
     sort(arg){return this.sorted(arg);}
-    size(){return this.count();}
-    findAny(){return this.findFirst();}
+    size(): number{return this.count();}
+    findAny(): Optional<T>{return this.findFirst();}
 }

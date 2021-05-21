@@ -25,7 +25,7 @@ export default interface IPipeline<T> extends ITerminal<T>{
     filter(regexp: RegExp): Pipeline<string>;
     filter(sample: TsStream.Sample): IPipeline<T>;
     findAny(): Optional<T>;
-    avg(path?: string): number;
+    avg(path?: string): Optional<number>;
     toList(): T[];
     takeWhile(predicate: TsStream.Predicate<T>): IPipeline<T>;
     takeWhile(regexp: RegExp): IPipeline<string>;

@@ -18,11 +18,11 @@ export default interface IPipeline<T> extends ITerminal<T>{
 
     distinct(): IPipeline<T>;
     dropWhile(predicate: TsStream.Predicate<T>): IPipeline<T>;
-    dropWhile(regexp: RegExp): Pipeline<string>;
+    dropWhile(regexp: RegExp): IPipeline<T>;
     dropWhile(sample: TsStream.Sample): IPipeline<T>;
     each(consumer: TsStream.Consumer<T>): void;
     filter(predicate: TsStream.Predicate<T>): IPipeline<T>;
-    filter(regexp: RegExp): Pipeline<string>;
+    filter(regexp: RegExp): IPipeline<T>;
     filter(sample: TsStream.Sample): IPipeline<T>;
     findAny(): Optional<T>;
     avg(path?: string): Optional<number>;
@@ -40,10 +40,11 @@ export default interface IPipeline<T> extends ITerminal<T>{
     join(delimiter: string): string;
     join(options: TsStream.JoinOptions): string;
     limit(limit: number): IPipeline<T>;
-    flatMap <U> (mapper: TsStream.Function<T, U[]>): IPipeline<U>;
+
 
     groupingBy(mapper: TsStream.Function<T, string>): TsStream.GroupingResult<T>;
     groupingBy(path: string): TsStream.GroupingResult<T>;
     indexBy(keyMapper: TsStream.Function<T, string>, mergeFunction?: TsStream.Accumulator<T>): TsStream.Map<T>;
     map <U> (mapper: TsStream.Function<T, U>): IPipeline<U>;
+    flatMap <U> (mapper: TsStream.Function<T, U[]>): IPipeline<U>;
 }

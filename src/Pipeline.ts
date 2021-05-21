@@ -113,7 +113,7 @@ export class Pipeline<T> implements IPipeline<T>{
         return this._checkAndSetConsumed(()=>this.terminal.iterator());
     }
 
-    add(op) {
+    add(op:PipelineOp) {
         if (this.lastOp !== null) {
             var prev = this.lastOp;
             op.prev = prev;
@@ -131,35 +131,35 @@ export class Pipeline<T> implements IPipeline<T>{
     // intermediate operations (stateless)
     //
 
-    filter(arg) {
+    filter(arg:TsStream.Predicate<T>|RegExp|TsStream.Sample): IPipeline<T> {
         if (isRegExp(arg)) {
-            this.add(new FilterOp(function (obj) {
-                return arg.test(obj);
+            this.add(new FilterOp(function (obj:string) {
+                return (arg as RegExp).test(obj);
             }));
         } else if (isObject(arg)) {
-            this.add(new FilterOp(function (obj) {
+            this.add(new FilterOp(function (obj:any) {
                 return deepEquals(arg, obj);
             }));
         } else {
-            this.add(new FilterOp(arg));
+            this.add(new FilterOp(arg as Function));
         }
         return this;
     };
 
-    map(arg) {
-        if (isString(arg)) {
-            this.add(new MapOp(pathMapper(arg)));
+    map<U> (mapper: TsStream.Function<T, U>|string): IPipeline<U> {
+        if (isString(mapper)) {
+            this.add(new MapOp(pathMapper(mapper as string)));
         } else {
-            this.add(new MapOp(arg));
+            this.add(new MapOp(mapper as TsStream.Function<T, U>));
         }
         return this;
     };
 
-    flatMap(arg) {
+    flatMap<U> (arg: TsStream.Function<T, U[]>|string): IPipeline<U> {
         if (isString(arg)) {
-            this.add(new MapOp(pathMapper(arg)));
+            this.add(new MapOp(pathMapper(arg as string)));
         } else {
-            this.add(new MapOp(arg));
+            this.add(new MapOp(arg as TsStream.Function<T, U[]>));
         }
         this.add(new FlatOp());
         return this;

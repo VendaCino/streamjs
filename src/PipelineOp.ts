@@ -1,11 +1,12 @@
 import {Iterator} from "./Iterator";
 import {isConsoleFn, isFunction} from "./Utils";
 import {ctx, nil} from "./global";
+import {TsStream} from "./TsStream";
 
 
 export abstract  class PipelineOp {
     next : PipelineOp = null;
-    prev  : PipelineOp= null;
+    prev  : PipelineOp = null;
 
     advance() {
         return this.prev.advance();

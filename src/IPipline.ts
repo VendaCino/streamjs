@@ -28,7 +28,7 @@ export default interface IPipeline<T> extends ITerminal<T>{
     avg(path?: string): Optional<number>;
     toList(): T[];
     takeWhile(predicate: TsStream.Predicate<T>): IPipeline<T>;
-    takeWhile(regexp: RegExp): IPipeline<string>;
+    takeWhile(regexp: RegExp): IPipeline<T>;
     takeWhile(sample: TsStream.Sample): IPipeline<T>;
 
     partitioningBy(predicate: TsStream.Predicate<T>): T[][];

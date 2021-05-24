@@ -152,7 +152,7 @@ export class Pipeline<T> implements IPipeline<T>{
         } else {
             this.add(new MapOp(mapper as TsStream.Function<T, U>));
         }
-        return this;
+        return this as unknown as IPipeline<U>;
     };
 
     flatMap<U> (arg: TsStream.Function<T, U[]>|string): IPipeline<U> {
@@ -162,7 +162,7 @@ export class Pipeline<T> implements IPipeline<T>{
             this.add(new MapOp(arg as TsStream.Function<T, U[]>));
         }
         this.add(new FlatOp());
-        return this;
+        return this as unknown as IPipeline<U>;
     };
 
 
@@ -170,26 +170,26 @@ export class Pipeline<T> implements IPipeline<T>{
     // intermediate operations (stateful)
     //
 
-    sorted(arg) {
-        var comparator;
+    sorted(arg?: string|TsStream.Comparator<T>): IPipeline<T>{
+        var comparator:TsStream.Comparator<T>;
         if (isFunction(arg)) {
-            comparator = arg;
+            comparator = arg as TsStream.Comparator<T>;
         } else if (isString(arg)) {
-            comparator = pathComparator(arg);
+            comparator = pathComparator(arg as string);
         } else {
             comparator = defaultComparator;
         }
         this.add(new StatefulOp({
-            finisher: function (array) {
+            finisher: function (array:Array<any>) {
                 array.sort(comparator);
             }
         }));
         return this;
     };
 
-    shuffle() {
+    shuffle() : IPipeline<T>{
         this.add(new StatefulOp({
-            merger: function (obj, array) {
+            merger: function (obj : any, array : Array<any>) {
                 if (array.length === 0) {
                     array.push(obj);
                 } else {
@@ -203,25 +203,25 @@ export class Pipeline<T> implements IPipeline<T>{
         return this;
     };
 
-    reverse() {
+    reverse() : IPipeline<T>{
         this.add(new StatefulOp({
-            merger: function (obj, array) {
+            merger: function (obj:any, array:Array<any>) {
                 array.unshift(obj);
             }
         }));
         return this;
     };
 
-    distinct() {
+    distinct() : IPipeline<T>  {
         this.add(new StatefulOp({
-            filter: function (obj, i, array) {
+            filter: function (obj:any, i:number, array:Array<any>) {
                 return array.indexOf(obj) < 0;
             }
         }));
         return this;
     };
 
-    slice(begin, end) {
+    slice(begin:number, end:number) : IPipeline<T> {
         if (begin > end) {
             throw "slice(): begin must not be greater than end";
         }
@@ -229,49 +229,47 @@ export class Pipeline<T> implements IPipeline<T>{
         return this;
     };
 
-    skip(num) {
+    skip(num:number) : IPipeline<T> {
         this.add(new SliceOp(num, Number.MAX_VALUE));
         return this;
     };
 
-    limit(num) {
+    limit(num:number)  : IPipeline<T>{
         this.add(new SliceOp(0, num));
         return this;
     };
 
-    peek(consumer) {
+    peek(consumer: TsStream.Consumer<T>): IPipeline<T> {
         this.add(new PeekOp(consumer));
         return this;
     };
 
-    takeWhile() {
-        var arg = arguments[0];
+    takeWhile(arg:RegExp|TsStream.Predicate<T>|TsStream.Sample): IPipeline<T> {
         if (isRegExp(arg)) {
-            this.add(new TakeWhileOp(function (obj) {
-                return arg.test(obj);
+            this.add(new TakeWhileOp(function (obj : string) {
+                return (arg as RegExp).test(obj);
             }));
         } else if (isObject(arg)) {
-            this.add(new TakeWhileOp(function (obj) {
+            this.add(new TakeWhileOp(function (obj:any) {
                 return deepEquals(arg, obj);
             }));
         } else {
-            this.add(new TakeWhileOp(arg));
+            this.add(new TakeWhileOp(arg as Function));
         }
         return this;
     };
 
-    dropWhile() {
-        var arg = arguments[0];
+    dropWhile(arg:RegExp|TsStream.Predicate<T>|TsStream.Sample): IPipeline<T> {
         if (isRegExp(arg)) {
-            this.add(new DropWhileOp(function (obj) {
-                return arg.test(obj);
+            this.add(new DropWhileOp(function (obj : string) {
+                return (arg as RegExp).test(obj);
             }));
         } else if (isObject(arg)) {
-            this.add(new DropWhileOp(function (obj) {
+            this.add(new DropWhileOp(function (obj:any) {
                 return deepEquals(arg, obj);
             }));
         } else {
-            this.add(new DropWhileOp(arg));
+            this.add(new DropWhileOp(arg as Function ));
         }
         return this;
     };
@@ -289,7 +287,7 @@ export class Pipeline<T> implements IPipeline<T>{
     toList(): T[]{return this.toArray();}
     join(arg?:TsStream.JoinOptions|string): string {return this.joining(arg);}
     avg(path?: string): Optional<number> {return this.average(path);}
-    sort(arg){return this.sorted(arg);}
+    sort(arg?: string|TsStream.Comparator<T>): IPipeline<T>{return this.sorted(arg);}
     size(): number{return this.count();}
     findAny(): Optional<T>{return this.findFirst();}
 }

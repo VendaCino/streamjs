@@ -29,7 +29,7 @@ class Reduce {
         .reduce(function (identity, num) {
             return identity * num;
         });
-    assert.equal(result, "[object Optional]");
+    assert.equal(result.toString(), "[object Optional]");
     assert.equal(result.get(), 24);
 
 }

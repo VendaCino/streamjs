@@ -99,7 +99,7 @@ class Introductiones6 {
     assert.equal(ops[5], "forEach: c3");
 
 }
-@test 'sample 6'() {
+@test 'sample 6-2'() {
 
     let ops = [];
 
@@ -158,7 +158,7 @@ class Introductiones6 {
 }
 @test 'sample 9'() {
 
-    let odd = array =>
+    let odd = (array:Array<number>) =>
         Stream(array).filter(n => n % 2 === 1);
 
     assert.equal(odd([1, 2, 3]).anyMatch(n => true), true);
@@ -169,7 +169,7 @@ class Introductiones6 {
 
 @test "sample 10-1" () {
     var groups = Stream(persons)
-        .groupBy(p => p.age);
+        .groupBy(p => p.age.toString());
 
     assert.equal(groups[18].length, 1);
     assert.equal(groups[23].length, 2);
@@ -235,7 +235,7 @@ class Introductiones6 {
     assert.equal(oldest.name, "Pamela");
 
 }
-@test 'sample 13'() {
+@test 'sample 13-2'() {
 
     var result = Stream(persons)
         .sort("age")
@@ -256,7 +256,7 @@ class Introductiones6 {
 }
 @test 'sample 14'() {
 
-    function* fibonacci() {
+    function* fibonacci(): Generator<number, number, number> {
         let [prev, cur] = [0, 1];
         while (true) {
             [prev, cur] = [cur, prev + cur];

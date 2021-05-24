@@ -3,7 +3,7 @@ import {ctx, Nil} from "./global";
 import {Optional} from "./Optional";
 import IPipeline from "./IPipline";
 
-export type StreamInput<T> = T[]|TsStream.Supplier<T>|String;
+export type StreamInput<T> = T[]|TsStream.Supplier<T>|String|Generator|Generator<T,T,T>;
 
 export function Stream<T> (input: StreamInput<T>): IPipeline<T> {
     return new Pipeline(input);
@@ -76,6 +76,16 @@ export declare namespace TsStream {
         supplier: Supplier<T>;
         accumulator?: TsStream.Accumulator<T>;
         finisher?: Function<T, T>;
+    }
+
+    export interface TransAccumulator<T,R> {
+        (e1: R, e2: T, first?: T): R;
+    }
+
+    export interface TransCollector<T,R> {
+        supplier: Supplier<R>;
+        accumulator?: TsStream.TransAccumulator<T,R>;
+        finisher?: Function<R, R>;
     }
 
     export interface Comparator<T> {

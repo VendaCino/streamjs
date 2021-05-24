@@ -1,13 +1,16 @@
 import {Optional} from "./Optional";
-import IPipeline from "./IPipline";
 import {TsStream} from "./TsStream";
-import {Pipeline} from "./Pipeline";
 
 export default interface ITerminal<T> {
-    groupBy(path: string|TsStream.Function<T, string>): TsStream.GroupingResult<T>;
+    groupBy(mapper:TsStream.Function<T, string>): TsStream.GroupingResult<T>;
+    groupBy(path: string): TsStream.GroupingResult<T>;
 
-    max(arg?:TsStream.Comparator<T>|string): Optional<T>;
-    min(arg?:TsStream.Comparator<T>|string): Optional<T>;
+    max(): Optional<T>;
+    max(comparator: TsStream.Comparator<T>): Optional<T>;
+    max(path: string): Optional<T>;
+    min(): Optional<T>;
+    min(comparator: TsStream.Comparator<T>): Optional<T>;
+    min(path: string): Optional<T>;
     noneMatch(predicate: (elem: T) => boolean): boolean;
     noneMatch(regexp: RegExp): boolean;
     iterator(): TsStream.Iterator<T>;
@@ -20,6 +23,7 @@ export default interface ITerminal<T> {
     partitionBy(regexp: RegExp): T[][];
     partitionBy(size: number): T[][];
 
+    reduce<R>(identity: R, accumulator: TsStream.TransAccumulator<T,R>): Optional<R>;
     reduce(identity: T, accumulator: TsStream.Accumulator<T>): Optional<T>;
     reduce(accumulator: TsStream.Accumulator<T>): Optional<T>;
     sum(path?: string): number;
@@ -33,6 +37,7 @@ export default interface ITerminal<T> {
     allMatch(sample: TsStream.Sample): boolean;
     average(path?: string): Optional<number>;
     collect(collector: TsStream.Collector<T>): T ;
+    collect<R>(collector: TsStream.TransCollector<T,R>): R ;
     count(): number;
     findFirst(): Optional<T>;
     forEach(consumer: TsStream.Consumer<T>): void;

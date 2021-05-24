@@ -44,7 +44,7 @@ export class Pipeline<T> implements IPipeline<T>{
             let inStr = input as string;
             separator = separator || '';
             if (inStr.endsWith(separator)) {
-                inStr = inStr.substring(0, input.length - separator.length);
+                inStr = inStr.substring(0, inStr.length - separator.length);
             }
             this.lastOp = new IteratorOp(inStr.split(separator));
         } else {

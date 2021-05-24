@@ -34,7 +34,9 @@ export class ArrayIterator<T> extends Iterator<T> {
 
     constructor(array: any) {
         super();
-        this.initialize(array);
+        this.data = array || [];
+        this.origin = 0;
+        this.fence = this.data.length;
     }
 
     next(): T|Nil {
@@ -49,11 +51,6 @@ export class ArrayIterator<T> extends Iterator<T> {
         }
     };
 
-    initialize(array: Array<any>) {
-        this.data = array || [];
-        this.origin = 0;
-        this.fence = this.data.length;
-    };
 }
 
 export class IteratorIterator<T> extends Iterator<T> {

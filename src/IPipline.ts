@@ -46,5 +46,6 @@ export default interface IPipeline<T> extends ITerminal<T>{
     groupingBy(path: string): TsStream.GroupingResult<T>;
     indexBy(keyMapper: TsStream.Function<T, string>, mergeFunction?: TsStream.Accumulator<T>): TsStream.Map<T>;
     map <U> (mapper: TsStream.Function<T, U>): IPipeline<U>;
+    map <U> (path:string): IPipeline<U>;
     flatMap <U> (mapper: TsStream.Function<T, U[]>): IPipeline<U>;
 }

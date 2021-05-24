@@ -86,10 +86,6 @@ export declare namespace TsStream {
         (elem: T): void;
     }
 
-    export interface Function<T, U> {
-        (elem: T): U;
-    }
-
     export interface GroupingResult<T> {
         [index: string]: T[]
     }

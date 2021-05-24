@@ -13,10 +13,9 @@ import {
 } from "./Utils";
 import {Optional} from "./Optional";
 import {Iterator} from "./Iterator";
-import {ctx, nil} from "./global";
+import {ctx, Nil, nil} from "./global";
 import ITerminal from "./ITerminal";
 import {TsStream} from "./TsStream";
-import IPipeline from "./IPipline";
 
 class StreamIterator extends Iterator<any>{
     private pipeline: Pipeline<any>
@@ -27,7 +26,7 @@ class StreamIterator extends Iterator<any>{
         this.pipeline = pipeline;
         this.value = pipeline.next();
     }
-    next  (): any {
+    next  (): any|Nil {
         let pipeline = this.pipeline;
         if (this.value === nil) {
             return {
@@ -62,27 +61,27 @@ export class Terminal<T> implements ITerminal<T> {
         this.pipeline = pipeline;
     }
 
-    toArray() {
-        var current, result = [];
+    toArray(): T[] {
+        let current:T|Nil, result: T[] = [];
         while ((current = this.pipeline.next()) !== nil) {
-            result.push(current);
+            result.push(current as T);
         }
         return result;
     };
 
     findFirst(): Optional<T> {
-        var obj = this.pipeline.next();
+        let obj = this.pipeline.next();
         if (obj === nil) {
             return Optional.empty();
         }
-        return Optional.ofNullable(obj);
+        return Optional.ofNullable(obj as T);
     };
 
     forEach(fn: TsStream.Consumer<T>): void{
         let pipeline = this.pipeline;
         let current, consoleFn = isConsoleFn(fn);
         while ((current = pipeline.next()) !== nil) {
-            fn.call(consoleFn ? console : ctx, current);
+            fn.call(consoleFn ? console : ctx, current as T);
         }
     };
 
@@ -98,11 +97,11 @@ export class Terminal<T> implements ITerminal<T> {
         let current, result = null;
         let pipeline = this.pipeline;
         while ((current = pipeline.next()) !== nil) {
-            if (result === null || comparator.call(ctx, current, result) < 0) {
+            if (result === null || comparator.call(ctx, current as T, result as T) < 0) {
                 result = current;
             }
         }
-        return Optional.ofNullable(result);
+        return Optional.ofNullable(result as T);
     };
 
     max(arg?:TsStream.Comparator<T>|string): Optional<T> {
@@ -117,11 +116,11 @@ export class Terminal<T> implements ITerminal<T> {
         var current, result = null;
         let pipeline = this.pipeline;
         while ((current = pipeline.next()) !== nil) {
-            if (result === null || comparator.call(ctx, current, result) > 0) {
+            if (result === null || comparator.call(ctx, current as T, result as T) > 0) {
                 result = current;
             }
         }
-        return Optional.ofNullable(result);
+        return Optional.ofNullable(result as T);
     };
 
     sum(path?:string) {
@@ -266,7 +265,7 @@ export class Terminal<T> implements ITerminal<T> {
             }
 
             while ((current = pipeline.next()) !== nil) {
-                identity = _accumulator.call(ctx, identity, current);
+                identity = _accumulator.call(ctx, identity as T, current as T);
             }
 
             return Optional.ofNullable(identity);
@@ -283,11 +282,11 @@ export class Terminal<T> implements ITerminal<T> {
             fn = pathMapper(path as string);
         }else fn = path as TsStream.Function<T, string> ;
         let pipeline = this.pipeline as unknown as Pipeline<TsStream.GroupingResult<T>>;
-        let r = pipeline.collect({
+        return pipeline.collect({
             supplier: function () {
-                return {} ;
+                return {};
             },
-            accumulator: function (map : any, obj : any) {
+            accumulator: function (map: any, obj: any) {
                 var key = fn.call(ctx, obj);
                 if (!map.hasOwnProperty(key)) {
                     map[key] = [];
@@ -301,7 +300,6 @@ export class Terminal<T> implements ITerminal<T> {
                 return map;
             }
         });
-        return r;
     }
     ;
 
@@ -410,7 +408,7 @@ export class Terminal<T> implements ITerminal<T> {
                 delimiter = opt.delimiter || delimiter;
             }
         }
-        let pipeline = this.pipeline as unknown as Pipeline<string>;;
+        let pipeline = this.pipeline as unknown as Pipeline<string>;
         return pipeline.collect({
             supplier: function () {
                 return "";

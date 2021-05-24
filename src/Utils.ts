@@ -5,7 +5,7 @@ export function defaultComparator(a : any, b : any) {
         return 0;
     }
     return a > b ? 1 : -1;
-};
+}
 
 export function pathComparator<T>(path:string) : TsStream.Comparator<T>{
     var fn = pathMapper(path);
@@ -14,7 +14,7 @@ export function pathComparator<T>(path:string) : TsStream.Comparator<T>{
             b = fn(obj2);
         return defaultComparator(a, b);
     };
-};
+}
 
 export function pathMapper(path:string) : TsStream.Function<any,any>{
     if (path.indexOf('.') < 0) {
@@ -32,7 +32,7 @@ export function pathMapper(path:string) : TsStream.Function<any,any>{
         }
         return current;
     };
-};
+}
  export function deepEquals(a : any, b : any):boolean{
     if (!isObject(a)) {
         return a === b;
@@ -61,50 +61,50 @@ export function pathMapper(path:string) : TsStream.Function<any,any>{
     }
 
     return true;
-};
+}
 
 var ObjToString = Object.prototype.toString;
 
-export function isString(obj) :boolean{
+export function isString(obj:any) :boolean{
     return ObjToString.call(obj) === '[object String]';
 }
 
-export function isFunction(obj) :boolean{
+export function isFunction(obj:any) :boolean{
     return typeof obj === 'function' || false;
 }
 
-export function isNumber(obj):boolean {
+export function isNumber(obj:any):boolean {
     return ObjToString.call(obj) === '[object Number]';
 }
 
-export function isArrayLike(obj):boolean{
+export function isArrayLike(obj:any):boolean{
     var length = obj.length;
     return typeof length === 'number' && length >= 0;
-};
+}
 
-export function isSet(obj) :boolean{
+export function isSet(obj:any) :boolean{
     // @ts-ignore
     return Boolean(Set) && obj instanceof Set && isFunction(obj.values);
 }
 
-export function isMap(obj):boolean {
+export function isMap(obj:any):boolean {
     // @ts-ignore
     return Boolean(Map) && obj instanceof Map && isFunction(obj.values);
 }
 
-export function isIterator(obj):boolean {
+export function isIterator(obj:any):boolean {
     return Boolean(obj) && isFunction(obj.next);
 }
 
-export function isObject(obj) :boolean{
+export function isObject(obj:any) :boolean{
     return Boolean(obj) && typeof obj === 'object';
 }
 
-export function isRegExp(obj):boolean {
+export function isRegExp(obj:any):boolean {
     return ObjToString.call(obj) === '[object RegExp]';
 }
 
-export function isConsoleFn(fn) :boolean{
+export function isConsoleFn(fn:any) :boolean{
     if (!console) {
         return false;
     }

@@ -1,2 +1,3 @@
 export const ctx = {};
-export const nil = {};
+export type Nil = Object;
+export const nil:Nil = {};

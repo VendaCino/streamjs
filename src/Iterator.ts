@@ -1,9 +1,9 @@
 import {isArrayLike, isIterator, isMap, isObject, isSet} from "./Utils";
-import {nil} from "./global";
+import {Nil, nil} from "./global";
 import {TsStream} from "./TsStream";
 
 export abstract class Iterator<T> implements TsStream.Iterator<T> {
-    abstract next() : T;
+    abstract next() : T|Nil;
     done: boolean = false;
     static of(data:any) {
         if (data === null || data === undefined) {
@@ -27,7 +27,7 @@ export abstract class Iterator<T> implements TsStream.Iterator<T> {
 
 
 
-export class ArrayIterator extends Iterator {
+export class ArrayIterator<T> extends Iterator<T> {
     data: any;
     origin: any;
     fence: any;
@@ -37,7 +37,7 @@ export class ArrayIterator extends Iterator {
         this.initialize(array);
     }
 
-    next() {
+    next(): T|Nil {
         if (this.origin >= this.fence) {
             return nil;
         }
@@ -56,7 +56,7 @@ export class ArrayIterator extends Iterator {
     };
 }
 
-export class IteratorIterator extends Iterator {
+export class IteratorIterator<T> extends Iterator<T> {
     iterator: any;
 
     constructor(iterator: any) {
@@ -64,7 +64,7 @@ export class IteratorIterator extends Iterator {
         this.iterator = iterator;
     }
 
-    next() {
+    next(): T|Nil {
         if (this.iterator) {
             var obj = this.iterator.next();
             if (obj.done) {
@@ -78,7 +78,7 @@ export class IteratorIterator extends Iterator {
 }
 
 
-export class ObjectIterator extends Iterator {
+export class ObjectIterator<T> extends Iterator<T> {
     private data: any;
     private keys: string[];
     private origin: number;
@@ -86,23 +86,18 @@ export class ObjectIterator extends Iterator {
 
     constructor(object: any) {
         super();
-        this.initialize(object);
-    }
-
-    initialize(object: any) {
         this.data = object || {};
         this.keys = Object.keys(object);
         this.origin = 0;
         this.fence = this.keys.length;
-    };
+    }
 
-    next() {
+    next(): T|Nil {
         if (this.origin >= this.fence) {
             return nil;
         }
-
         try {
-            var key = this.keys[this.origin];
+            let key = this.keys[this.origin];
             return this.data[key];
         } finally {
             this.origin++;
@@ -110,21 +105,16 @@ export class ObjectIterator extends Iterator {
     };
 }
 
-export class ValueIterator extends Iterator {
-    private done: Boolean | undefined;
+export class ValueIterator<T> extends Iterator<T> {
     private value: any;
 
     constructor(value: any) {
         super();
-        this.initialize(value);
-    }
-
-    initialize(value: any) {
         this.value = value;
         this.done = false;
-    };
+    }
 
-    next() {
+    next(): T|Nil {
         if (!this.done) {
             this.done = true;
             return this.value;
@@ -134,21 +124,16 @@ export class ValueIterator extends Iterator {
 
 }
 
-export class EmptyIterator extends Iterator {
+export class EmptyIterator<T> extends Iterator<T> {
     private value: any;
-    private done: boolean | undefined;
 
     constructor(value: any) {
         super();
-        this.initialize(value)
-    }
-
-    initialize(value: any) {
         this.value = value;
         this.done = true;
-    };
+    }
 
-    next() {
+    next() : T|Nil{
         return nil;
     };
 }

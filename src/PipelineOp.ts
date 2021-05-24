@@ -5,28 +5,25 @@ import {TsStream} from "./TsStream";
 
 
 export abstract  class PipelineOp {
-    next : PipelineOp = null;
-    prev  : PipelineOp = null;
+    next : PipelineOp|null = null;
+    prev  : PipelineOp|null = null;
 
-    advance() {
-        return this.prev.advance();
+    advance(): any {
+        return this.prev!.advance();
     }
 
-    abstract pipe(obj: any);
-
-    protected iterator: Iterator;
-    protected fn: Function;
+    abstract pipe(obj: any) : any;
 }
 
 export class IteratorOp extends PipelineOp {
-
+    protected iterator: Iterator<any>;
     constructor(data: any) {
         super();
         this.iterator = Iterator.of(data);
     }
 
-    advance() {
-        var obj = this.iterator.next();
+    advance(): any {
+        let obj = this.iterator.next();
         if (obj === nil) {
             return obj;
         }
@@ -36,23 +33,20 @@ export class IteratorOp extends PipelineOp {
         return this.next.pipe(obj);
     }
 
-    pipe(obj: any) {
+    pipe(obj: any): any {
     }
 
 }
 
 export class MapOp extends PipelineOp {
+    protected fn: Function;
     constructor(fn:Function) {
         super();
         this.fn=fn;
     }
 
-    advance() {
-        return this.prev.advance();
-    }
-
-    pipe(obj) {
-        var result = this.fn.call(ctx, obj);
+    pipe(obj: any): any {
+        let result = this.fn.call(ctx, obj);
         if (this.next === null) {
             return result;
         }
@@ -62,19 +56,20 @@ export class MapOp extends PipelineOp {
 
 export class FlatOp extends PipelineOp {
 
+    protected iterator: Iterator<any>|null;
     constructor() {
         super();
         this.iterator = null;
     }
 
-    advance() {
+    advance() :any {
         if (this.iterator === null) {
-            return this.prev.advance();
+            return this.prev!.advance();
         }
-        var obj = this.iterator.next();
+        let obj = this.iterator.next();
         if (obj === nil) {
             this.iterator = null;
-            return this.prev.advance();
+            return this.prev!.advance();
         }
         if (this.next === null) {
             return obj;
@@ -82,11 +77,11 @@ export class FlatOp extends PipelineOp {
         return this.next.pipe(obj);
     };
 
-    pipe(obj) {
+    pipe(obj:any) {
         this.iterator = Iterator.of(obj);
-        var current = this.iterator.next();
+        let current = this.iterator.next();
         if (current === nil) {
-            return this.prev.advance();
+            return this.prev!.advance();
         }
         if (this.next === null) {
             return current;
@@ -96,20 +91,16 @@ export class FlatOp extends PipelineOp {
 }
 
 export class FilterOp extends PipelineOp {
-
+    protected fn: Function;
     constructor(fn:Function) {
         super();
         this.fn=fn;
     }
 
-    advance() {
-        return this.prev.advance();
-    };
-
     pipe(obj: any) {
         var filtered = this.fn.call(ctx, obj);
         if (!filtered) {
-            return this.prev.advance();
+            return this.prev!.advance();
         }
         if (this.next === null) {
             return obj;
@@ -119,17 +110,15 @@ export class FilterOp extends PipelineOp {
 }
 
 export class GeneratorOp extends PipelineOp {
-
-    constructor(fn) {
+    protected fn: Function;
+    constructor(fn: Function) {
         super();
-        this.prev = null;
-        this.next = null;
         this.fn = fn;
     }
 
     advance() {
-        var val = this.fn.call(ctx);
-        return this.next.pipe(val);
+        let val = this.fn.call(ctx);
+        return this.next!.pipe(val);
     };
 
     pipe(obj: any) {
@@ -144,7 +133,7 @@ export class StatefulOp extends PipelineOp {
     private buffer: Array<any>|null;
     private i: number;
 
-    constructor(options) {
+    constructor(options:any) {
         super();
         this.prev = null;
         this.next = null;
@@ -157,11 +146,10 @@ export class StatefulOp extends PipelineOp {
     }
 
     advance() {
-        var obj;
-
+        let obj;
         if (this.buffer === null) {
             this.buffer = [];
-            while ((obj = this.prev.advance()) !== nil) {
+            while ((obj = this.prev!.advance()) !== nil) {
                 // obj will be added to buffer via this.pipe
                 this.i++;
             }
@@ -186,9 +174,8 @@ export class StatefulOp extends PipelineOp {
         if (this.filter && this.filter.call(ctx, obj, this.i, this.buffer) === false) {
             return;
         }
-
         if (!this.customMerge) {
-            this.buffer.push(obj);
+            this.buffer!.push(obj);
         } else {
             this.merger.call({}, obj, this.buffer);
         }
@@ -213,7 +200,7 @@ export class SliceOp extends PipelineOp {
         }
         this.i++;
         if (this.i <= this.begin) {
-            return this.prev.advance();
+            return this.prev!.advance();
         }
         if (this.next === null) {
             return obj;
@@ -223,11 +210,11 @@ export class SliceOp extends PipelineOp {
 }
 
 export class PeekOp extends PipelineOp {
-    private consumer: any;
+    private consumer: TsStream.Consumer<any>;
     private consoleFn: boolean;
 
 
-    constructor(consumer) {
+    constructor(consumer: TsStream.Consumer<any>) {
         super();
         this.consumer = consumer;
         this.consoleFn = isConsoleFn(consumer);
@@ -243,15 +230,15 @@ export class PeekOp extends PipelineOp {
 }
 
 export class TakeWhileOp extends PipelineOp {
-    private predicate: any;
+    private predicate:TsStream.Predicate<any>;
 
-    constructor(predicate) {
+    constructor(predicate:TsStream.Predicate<any>) {
         super();
         this.predicate = predicate;
     }
 
     pipe(obj: any) {
-        var filtered = this.predicate.call(ctx, obj);
+        let filtered = this.predicate.call(ctx, obj);
         if (filtered !== true) {
             return nil;
         }
@@ -263,10 +250,10 @@ export class TakeWhileOp extends PipelineOp {
 }
 
 export class DropWhileOp extends PipelineOp {
-    private predicate: any;
+    private predicate:TsStream.Predicate<any>;
     private border: boolean;
 
-    constructor(predicate) {
+    constructor(predicate:TsStream.Predicate<any>) {
         super();
         this.predicate = predicate;
         this.border = false;
@@ -276,7 +263,7 @@ export class DropWhileOp extends PipelineOp {
         if (!this.border) {
             var filtered = this.predicate.call(ctx, obj);
             if (filtered === true) {
-                return this.prev.advance();
+                return this.prev!.advance();
             }
             this.border = true;
         }

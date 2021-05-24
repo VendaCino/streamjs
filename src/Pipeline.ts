@@ -23,7 +23,7 @@ import {
 } from "./Utils";
 import { Terminal} from "./Terminal";
 import { Optional } from "./Optional";
-import {ctx} from "./global";
+import {ctx, Nil} from "./global";
 import {StreamInput, TsStream} from "./TsStream";
 import IPipeline from "./IPipline";
 
@@ -33,7 +33,7 @@ export class Pipeline<T> implements IPipeline<T>{
     private terminal: Terminal<T>;
     private consumed:boolean = false;
 
-    constructor(input:StreamInput<T>) {
+    constructor(input:StreamInput<T>,separator?:string) {
         // default op iterates over input elements
 
         if (isFunction(input)) {
@@ -41,7 +41,12 @@ export class Pipeline<T> implements IPipeline<T>{
                 return (input as TsStream.Supplier<T>).call(ctx);
             });
         } else if (isString(input)) {
-            this.lastOp = new IteratorOp((input as String).split(''));
+            let inStr = input as string;
+            separator = separator || '';
+            if (inStr.endsWith(separator)) {
+                inStr = inStr.substring(0, input.length - separator.length);
+            }
+            this.lastOp = new IteratorOp(inStr.split(separator));
         } else {
             this.lastOp = new IteratorOp(input);
         }
@@ -122,7 +127,7 @@ export class Pipeline<T> implements IPipeline<T>{
         this.lastOp = op;
     };
 
-    next() {
+    next() : T|Nil {
         return this.lastOp.advance();
     };
 
@@ -254,7 +259,7 @@ export class Pipeline<T> implements IPipeline<T>{
                 return deepEquals(arg, obj);
             }));
         } else {
-            this.add(new TakeWhileOp(arg as Function));
+            this.add(new TakeWhileOp(arg as TsStream.Predicate<T>));
         }
         return this;
     };
@@ -269,7 +274,7 @@ export class Pipeline<T> implements IPipeline<T>{
                 return deepEquals(arg, obj);
             }));
         } else {
-            this.add(new DropWhileOp(arg as Function ));
+            this.add(new DropWhileOp(arg as TsStream.Predicate<T>));
         }
         return this;
     };

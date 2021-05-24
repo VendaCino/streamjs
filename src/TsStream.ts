@@ -1,37 +1,38 @@
 import {Pipeline} from "./Pipeline";
-import {ctx} from "./global";
+import {ctx, Nil} from "./global";
 import {Optional} from "./Optional";
+import IPipeline from "./IPipline";
 
 export type StreamInput<T> = T[]|TsStream.Supplier<T>|String;
 
-export function Stream<T> (input: StreamInput<T>): Pipeline<T> {
+export function Stream<T> (input: StreamInput<T>): IPipeline<T> {
     return new Pipeline(input);
 }
 
-Stream.from = function <T> (elems: T[]): Pipeline<T> {
+Stream.from = function <T> (elems: T[]): IPipeline<T> {
     return Stream(elems);
 };
 
-Stream.range = function (startInclusive: number, endExclusive: number): Pipeline<number> {
+Stream.range = function (startInclusive: number, endExclusive: number): IPipeline<number> {
     return Stream.iterate(startInclusive, function (num:number) {
         return num + 1;
     }).limit(endExclusive - startInclusive);
 };
 
-Stream.rangeClosed = function (startInclusive: number, endInclusive: number): Pipeline<number>{
+Stream.rangeClosed = function (startInclusive: number, endInclusive: number): IPipeline<number>{
     return Stream.range(startInclusive, endInclusive + 1);
 };
 
-Stream.of = function <T>(...elems: T[]): Pipeline<T> {
+Stream.of = function <T>(...elems: T[]): IPipeline<T> {
     let args = Array.prototype.slice.call(elems);
     return Stream(args);
 };
 
-Stream.generate = function <T> (supplier: TsStream.Supplier<T>): Pipeline<T>{
+Stream.generate = function <T> (supplier: TsStream.Supplier<T>): IPipeline<T>{
     return Stream(supplier);
 };
 
-Stream.iterate = function <T>(seed: T, fn: TsStream.Function<T, T>): Pipeline<T>{
+Stream.iterate = function <T>(seed: T, fn: TsStream.Function<T, T>): IPipeline<T>{
     let first = true, current = seed;
     return Stream(function () {
         if (first) {
@@ -94,7 +95,7 @@ export declare namespace TsStream {
     }
 
     export interface Iterator<T> {
-        next(): T;
+        next(): T|Nil;
         done: boolean;
     }
 
